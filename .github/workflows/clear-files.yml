@@ -1,0 +1,25 @@
+name: Clear Files on PR to Main
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  clear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clear all files
+        run: |
+          find . -type f -not -path './.git/*' -exec sh -c 'echo -n > "$1"' _ {} \;
+      - name: Commit and push
+        run: |
+          git add .
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Clear all files' || echo "No changes to commit"
+          git push
